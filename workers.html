@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find a Worker - HomeFix</title>
+<meta name="description" content="Browse verified local plumbers, electricians, carpenters and cleaners on HomeFix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header><h1>HomeFix</h1><nav><a href="index.html">Home</a><a href="workers.html">Workers</a><a href="index.html#contact">Contact</a></nav></header>
+<section class="profile-section"><div class="profile-box">
+  <h2 class="list-title">Find a worker</h2>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Search by name or skill" aria-label="Search workers">
+    <select id="svc" aria-label="Service"><option value="all">All services</option></select>
+    <select id="sort" aria-label="Sort"><option value="rating">Top rated</option><option value="rate">Lowest price</option><option value="jobs">Most jobs</option></select>
+    <label class="check"><input id="avail" type="checkbox"> Available today</label>
+  </div>
+  <p class="result-count" id="count" aria-live="polite"></p>
+  <div class="worker-grid" id="grid"></div>
+</div></section>
+<footer><p>&copy; 2026 HomeFix. All rights reserved.</p></footer>
+<script src="workers.js"></script>
+<script>
+const $=id=>document.getElementById(id), svc=$('svc');
+Object.entries(SERVICES).forEach(([k,v])=>svc.add(new Option(v,k)));
+const p=new URLSearchParams(location.search).get('service'); if(p&&SERVICES[p]) svc.value=p;
+function render(){
+  const q=$('q').value.toLowerCase().trim();
+  let list=WORKERS.filter(w=>(svc.value==='all'||w.service===svc.value)&&(!$('avail').checked||w.available)&&(!q||(w.name+' '+w.skills.join(' ')).toLowerCase().includes(q)));
+  const s=$('sort').value; list.sort((a,b)=>s==='rate'?a.rate-b.rate:b[s]-a[s]);
+  $('count').textContent=list.length+' worker'+(list.length===1?'':'s')+' found';
+  $('grid').innerHTML=list.map(w=>`<article class="mini-worker"><div class="profile-avatar sm">${initials(w.name)}</div><h3>${w.name}</h3><p class="profile-role">${SERVICES[w.service]} &middot; ${w.years} yrs</p><p class="mw-meta"><span>★ ${w.rating}</span><span>${w.jobs} jobs</span><span>₹${w.rate}/visit</span></p><span class="${w.available?'availability':'availability off'}">${w.available?'Available today':'Busy today'}</span><a class="book-btn" href="worker.html?id=${w.id}">View &amp; Book</a></article>`).join('')||'<p class="empty">No workers match your filters. Try clearing them.</p>';
+}
+['input','change'].forEach(e=>document.querySelector('.filters').addEventListener(e,render)); render();
+</script></body></html>
